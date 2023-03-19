@@ -1,0 +1,70 @@
+<html>
+<script type="text/javascript">
+function sendData(action, dataJSON) {
+  var XHR = new XMLHttpRequest();
+  var dataTxt = JSON.stringify(dataJSON);
+  XHR.addEventListener('load', function(event) {
+      if (event.target.responseURL.endsWith("/getMagnetField")) {
+            var tmp = parseFloat(event.target.response);
+          document.getElementById('magnet').innerHTML = tmp + "T";
+      }
+/*
+      if (event.target.responseURL.endsWith("rpc/FS.Get")) {
+          if (event.target.response.includes('"data":')) {
+            var tmp = atob(JSON.parse(event.target.response).data);
+            if (tmp.startsWith("{")) {
+                document.getElementById('filetxt').value = JSON.stringify(JSON.parse(tmp), undefined, 4);
+            } else {
+                document.getElementById('filetxt').value = tmp;
+            }
+          } else {
+              alert (event.target.response);
+          }
+      }
+*/
+  });
+
+  // Définissez ce qui arrive en cas d'erreur
+  /*XHR.addEventListener('error', function(event) {
+    alert('Oups! Quelque chose s\'est mal passé.');
+  });*/
+
+  // Configurez la requête
+  XHR.open('POST', action);
+
+  // Ajoutez l'en-tête HTTP requise pour requêtes POST de données de formulaire
+  XHR.setRequestHeader('Content-Type', 'plain/text');
+
+  // Finalement, envoyez les données.
+  XHR.send(dataTxt);
+}
+function config_magneto_on_off () {
+    var checkon = document.getElementById("switch_config").checked;
+    var dataJSON = {};
+    sendData("/configMagneto/" + (checkon?"1":"0"), dataJSON);
+}
+
+function read_all () {
+    var dataJSON = {};
+    sendData("/getMagnetField",dataJSON);
+}
+
+document.onreadystatechange = function () {
+  var state = document.readyState;
+  if (state == 'interactive') {
+  } else if (state == 'complete') {
+   setInterval(read_all, 500);
+  }
+};
+
+</script>
+<body>
+  <h1>Welcome to Mongoose OS</h1>
+    <fieldset>
+      <legend>Config magneto</legend>
+        <input type="checkbox" id="switch_config" name="switch_config" onchange="config_magneto_on_off()">
+	<br>
+	Magnet field: <span id="magnet"></span>
+    </fieldset>
+</body>
+</html>
